@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Навигатор кампуса УрФУ</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=f14fc2c9-7ce7-47e9-b762-1ae61eee1e5b&lang=ru_RU"></script>
+</head>
+<body>
+<div class="app-container">
+    <div class="top-bar">
+        <h1>Навигатор кампуса УрФУ</h1>
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Поиск: ИРИТ, ИНЭУ, столовая">
+        </div>
+    </div>
+    <div class="map-area">
+        <div id="map"></div>
+    </div>
+    <div id="resultsList" class="results-dropdown"></div>
+    <div id="infoCard" class="info-card">
+        <div class="place-title">ИРИТ-РТФ</div>
+        <div class="place-desc">Институт радиоэлектроники и информационных технологий</div>
+        <button class="route-btn disabled" id="mainRouteBtn" disabled>
+            <span class="route-icon"></span>
+            Построить маршрут
+        </button>
+    </div>
+    <div class="admin-panel">
+        <span class="admin-label">Управление точками</span>
+        <button class="admin-toggle" id="adminToggleBtn">Добавить место</button>
+    </div>
+    <div id="addForm" class="add-form">
+        <input type="text" id="newName" placeholder="Название">
+        <input type="text" id="newLat" placeholder="Широта">
+        <input type="text" id="newLon" placeholder="Долгота">
+        <select id="newType">
+            <option value="admin">Администрация</option>
+            <option value="food">Столовая</option>
+            <option value="lib">Библиотека</option>
+            <option value="room">Аудитория</option>
+            <option value="other">Другое</option>
+        </select>
+        <button id="saveNewBtn">Сохранить</button>
+    </div>
+</div>
+<script src="cordova.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

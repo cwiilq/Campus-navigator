@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.example.campusnav" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Навигатор Кампуса</name>
+    <description>Приложение для навигации по кампусу УрФУ</description>
+    <author email="campus@example.com" href="https://example.com">
+        Campus Nav Team
+    </author>
+    <content src="index.html" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="https://api-maps.yandex.ru/*" />
+    <allow-intent href="https://yandex.ru/*" />
+    <allow-intent href="https://ssl.gstatic.com/*" />
+    <access origin="*" />
+    <preference name="Orientation" value="portrait" />
+    <preference name="Fullscreen" value="false" />
+    <preference name="StatusBarOverlaysWebView" value="false" />
+    <preference name="StatusBarBackgroundColor" value="#1a2a3a" />
+
+    <platform name="android">
+<!--        <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest">-->
+<!--            <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
+<!--            <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
+<!--            <uses-permission android:name="android.permission.INTERNET" />-->
+<!--        </edit-config>-->
+        <preference name="android-minSdkVersion" value="22" />
+        <preference name="android-targetSdkVersion" value="35" />
+        <preference name="android-compileSdkVersion" value="35" />
+    </platform>
+</widget>
