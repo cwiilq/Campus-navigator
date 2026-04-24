@@ -12,7 +12,7 @@
         <h1>Навигатор кампуса УрФУ</h1>
         <div class="search-box">
             <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Поиск: ИРИТ, ИНЭУ, столовая">
+            <input type="text" id="searchInput" placeholder="Поиск: аудитория, столовая">
         </div>
     </div>
 
@@ -24,18 +24,19 @@
         <button class="floor-btn" data-floor="4">4</button>
     </div>
 
-    <div class="map-area">
-        <img id="floorMap" class="floor-image" src="img/floor-0.png" alt="План 0 этажа">
+    <div id="mapArea" class="map-area">
+        <img id="floorMap" class="floor-image" src="img/floor-1.png" alt="План этажа">
+        <div id="markersContainer" class="markers-container"></div>
+        <svg id="routeSvg" class="route-svg"></svg>
     </div>
 
     <div id="resultsList" class="results-dropdown"></div>
 
     <div id="infoCard" class="info-card">
-        <div class="place-title">ИРИТ-РТФ</div>
-        <div class="place-desc">Институт радиоэлектроники и информационных технологий</div>
+        <div class="place-title">Выберите две точки</div>
+        <div id="placeDesc" class="place-desc">Нажмите на первую точку (откуда), затем на вторую (куда)</div>
         <button class="route-btn disabled" id="mainRouteBtn" disabled>
-            <span class="route-icon"></span>
-            Построить маршрут
+            Выберите откуда и куда
         </button>
     </div>
 
@@ -46,8 +47,8 @@
 
     <div id="addForm" class="add-form">
         <input type="text" id="newName" placeholder="Название">
-        <input type="text" id="newX" placeholder="X на схеме">
-        <input type="text" id="newY" placeholder="Y на схеме">
+        <input type="text" id="newX" placeholder="X на схеме (0-1)">
+        <input type="text" id="newY" placeholder="Y на схеме (0-1)">
         <input type="text" id="newFloor" placeholder="Этаж (0-4)">
         <select id="newType">
             <option value="admin">Администрация</option>
