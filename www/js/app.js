@@ -110,20 +110,45 @@ function findPathBetweenFloors(start, target, stairsList) {
         return null;
     }
 
-    const bestStartStair = findBestStair(startPos.x, startPos.y, stairsOnStart);
-    if (!bestStartStair) return null;
-
-    const startToStair = leeAlgorithm(startFloorGrid, startPos.x, startPos.y, bestStartStair.x, bestStartStair.y);
-    if (!startToStair) return null;
-
     const stairsOnTarget = stairsList.filter(s => s.floor === target.floor);
     if (stairsOnTarget.length === 0) {
         alert("На целевом этаже нет лестниц");
         return null;
     }
 
-    const bestTargetStair = findBestStair(targetPos.x, targetPos.y, stairsOnTarget);
-    if (!bestTargetStair) return null;
+    let bestStartStair = null;
+    let bestTargetStair = null;
+
+    const sortedStairsOnStart = [...stairsOnStart].sort((a, b) => {
+        const distA = getDistance(startPos.x, startPos.y, a.x, a.y);
+        const distB = getDistance(startPos.x, startPos.y, b.x, b.y);
+        return distA - distB;
+    });
+
+    for (const startStair of sortedStairsOnStart) {
+        const matchingTargetStair = stairsOnTarget.find(s => s.id === startStair.id);
+        if (matchingTargetStair) {
+            bestStartStair = startStair;
+            bestTargetStair = matchingTargetStair;
+            break;
+        }
+    }
+
+    if (!bestStartStair) {
+        bestStartStair = sortedStairsOnStart[0];
+        const targetStairsSorted = [...stairsOnTarget].sort((a, b) => {
+            const distA = getDistance(targetPos.x, targetPos.y, a.x, a.y);
+            const distB = getDistance(targetPos.x, targetPos.y, b.x, b.y);
+            return distA - distB;
+        });
+        bestTargetStair = targetStairsSorted[0];
+        console.log("Не найдено совпадений по ID, используются ближайшие лестницы");
+    }
+
+    if (!bestStartStair || !bestTargetStair) return null;
+
+    const startToStair = leeAlgorithm(startFloorGrid, startPos.x, startPos.y, bestStartStair.x, bestStartStair.y);
+    if (!startToStair) return null;
 
     const stairToTarget = leeAlgorithm(targetFloorGrid, bestTargetStair.x, bestTargetStair.y, targetPos.x, targetPos.y);
     if (!stairToTarget) return null;
@@ -482,12 +507,12 @@ function setCurrentFloor(floor) {
                 if (fullRouteData.type === "same" && fullRouteData.startFloor === currentFloor) {
                     drawPathOnCanvas(fullRouteData.path);
                 } else if (fullRouteData.type === "cross") {
-                    if (currentFloor === fullRouteData.startFloor) {
+                    if (currentFloor === fullRouteData.startFloor && fullRouteData.startPath) {
                         drawPathOnCanvas(fullRouteData.startPath);
                         if (fullRouteData.stairPoint) {
                             showStairMessage(fullRouteData.stairPoint, fullRouteData.startFloor, fullRouteData.endFloor);
                         }
-                    } else if (currentFloor === fullRouteData.endFloor) {
+                    } else if (currentFloor === fullRouteData.endFloor && fullRouteData.endPath) {
                         drawPathOnCanvas(fullRouteData.endPath);
                     } else {
                         const svg = document.getElementById("routeSvg");
@@ -502,12 +527,12 @@ function setCurrentFloor(floor) {
                 if (fullRouteData.type === "same" && fullRouteData.startFloor === currentFloor) {
                     drawPathOnCanvas(fullRouteData.path);
                 } else if (fullRouteData.type === "cross") {
-                    if (currentFloor === fullRouteData.startFloor) {
+                    if (currentFloor === fullRouteData.startFloor && fullRouteData.startPath) {
                         drawPathOnCanvas(fullRouteData.startPath);
                         if (fullRouteData.stairPoint) {
                             showStairMessage(fullRouteData.stairPoint, fullRouteData.startFloor, fullRouteData.endFloor);
                         }
-                    } else if (currentFloor === fullRouteData.endFloor) {
+                    } else if (currentFloor === fullRouteData.endFloor && fullRouteData.endPath) {
                         drawPathOnCanvas(fullRouteData.endPath);
                     } else {
                         const svg = document.getElementById("routeSvg");
@@ -588,8 +613,6 @@ window.addEventListener("resize", function() {
             } else if (fullRouteData.type === "cross") {
                 if (currentFloor === fullRouteData.startFloor) {
                     drawPathOnCanvas(fullRouteData.startPath);
-                } else if (currentFloor === fullRouteData.endFloor) {
-                    drawPathOnCanvas(fullRouteData.endPath);
                 }
             }
         }
