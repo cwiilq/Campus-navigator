@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Навигатор кампуса УрФУ (ИРИТ-РТФ)</title>
+    <title>Навигатор ИРИТ-РТФ УрФУ</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <div class="app-container">
     <div class="top-bar">
-        <h1>Навигатор кампуса УрФУ</h1>
+        <h1>Навигатор ИРИТ-РТФ</h1>
         <div class="search-box">
             <span class="search-icon">🔍</span>
             <input type="text" id="searchInput" placeholder="Поиск: аудитория, столовая">
@@ -17,15 +17,13 @@
     </div>
 
     <div class="floor-controls">
-        <button class="floor-btn" data-floor="0">0</button>
         <button class="floor-btn" data-floor="1">1</button>
         <button class="floor-btn" data-floor="2">2</button>
         <button class="floor-btn" data-floor="3">3</button>
-        <button class="floor-btn" data-floor="4">4</button>
     </div>
 
     <div id="mapArea" class="map-area">
-        <img id="floorMap" class="floor-image" src="img/floor-1.png" alt="План этажа">
+        <img id="floorMap" class="floor-image" src="img/floor-1.svg" alt="План 1 этажа">
         <div id="markersContainer" class="markers-container"></div>
         <svg id="routeSvg" class="route-svg"></svg>
     </div>
@@ -38,26 +36,6 @@
         <button class="route-btn disabled" id="mainRouteBtn" disabled>
             Выберите откуда и куда
         </button>
-    </div>
-
-    <div class="admin-panel">
-        <span class="admin-label">Управление точками</span>
-        <button class="admin-toggle" id="adminToggleBtn">Добавить место</button>
-    </div>
-
-    <div id="addForm" class="add-form">
-        <input type="text" id="newName" placeholder="Название">
-        <input type="text" id="newX" placeholder="X на схеме (0-1)">
-        <input type="text" id="newY" placeholder="Y на схеме (0-1)">
-        <input type="text" id="newFloor" placeholder="Этаж (0-4)">
-        <select id="newType">
-            <option value="admin">Администрация</option>
-            <option value="food">Столовая</option>
-            <option value="lib">Библиотека</option>
-            <option value="room">Аудитория</option>
-            <option value="other">Другое</option>
-        </select>
-        <button id="saveNewBtn">Сохранить</button>
     </div>
 </div>
 

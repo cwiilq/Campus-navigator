@@ -24,7 +24,7 @@ body {
 }
 
 .top-bar {
-    background: #0056b3;
+    background: #1a2a3a;
     padding: 16px;
     flex-shrink: 0;
 }
@@ -86,9 +86,9 @@ body {
 }
 
 .floor-btn.active {
-    background: #0056b3;
+    background: #1a2a3a;
     color: #ffffff;
-    border-color: #0056b3;
+    border-color: #1a2a3a;
 }
 
 .map-area {
@@ -104,7 +104,7 @@ body {
 .floor-image {
     width: 100%;
     height: 100%;
-    object-fit: fill;
+    object-fit: contain;
     display: block;
 }
 
@@ -131,7 +131,7 @@ body {
     position: absolute;
     width: 22px;
     height: 22px;
-    background-color: #e74c3c;
+    background-color: #3b82f6;
     border: 2px solid white;
     border-radius: 50%;
     cursor: pointer;
@@ -143,7 +143,7 @@ body {
 
 .place-marker:active {
     transform: translate(-50%, -50%) scale(1.2);
-    background-color: #c0392b;
+    background-color: #2563eb;
 }
 
 .results-dropdown {
@@ -205,7 +205,7 @@ body {
 }
 
 .route-btn {
-    background: #0056b3;
+    background: #1a2a3a;
     color: white;
     border: none;
     padding: 10px;
@@ -217,7 +217,7 @@ body {
 }
 
 .route-btn:active {
-    background: #003b7a;
+    background: #0f1a24;
 }
 
 .route-btn.disabled {
@@ -226,74 +226,15 @@ body {
     cursor: default;
 }
 
-.admin-panel {
-    background: #f8fafc;
-    margin: 4px 12px 12px 12px;
-    padding: 10px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-}
-
-.admin-label {
-    font-size: 13px;
-    color: #475569;
-}
-
-.admin-toggle {
-    background: #0056b3;
-    border: none;
-    padding: 6px 14px;
-    border-radius: 6px;
+.marker-tooltip {
+    position: fixed;
+    background: #1a2a3a;
     color: white;
-    font-size: 13px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 100;
+    white-space: nowrap;
+    pointer-events: none;
     font-weight: 500;
-    cursor: pointer;
-}
-
-.admin-toggle:active {
-    background: #003b7a;
-}
-
-.add-form {
-    background: #f8fafc;
-    margin: 0 12px 12px 12px;
-    padding: 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-    flex-shrink: 0;
-}
-
-.add-form input, .add-form select {
-    padding: 10px 12px;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    font-size: 14px;
-    font-family: inherit;
-}
-
-.add-form input:focus, .add-form select:focus {
-    outline: none;
-    border-color: #0056b3;
-}
-
-.add-form button {
-    background: #0056b3;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.add-form button:active {
-    background: #003b7a;
 }
