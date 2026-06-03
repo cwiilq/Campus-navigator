@@ -5,7 +5,6 @@ let currentPath = [];
 let currentRouteStair = null;
 let routeBuilt = false;
 let fullRouteData = null;
-let hideLabels = false;
 
 let scale = 1;
 let translateX = 0;
@@ -166,11 +165,8 @@ function clearRoute() {
     currentRouteStair = null;
     routeBuilt = false;
     fullRouteData = null;
-}
-
-function clearRouteVisual() {
-    const svg = document.getElementById("routeSvg");
-    if (svg) svg.innerHTML = "";
+    const msgContainer = document.getElementById("stairMessageContainer");
+    if (msgContainer) msgContainer.style.display = "none";
 }
 
 function getMapLayout() {
@@ -216,71 +212,64 @@ function updateRouteThickness() {
     }
 }
 
+function updateStairMessagePosition() {
+    const msgElement = document.getElementById("stairMessageElement");
+    if (!msgElement) return;
+    if (!fullRouteData || fullRouteData.type !== "cross") return;
+    if (currentFloor !== fullRouteData.startFloor) return;
+
+    const stairPoint = fullRouteData.stairPoint;
+    if (!stairPoint) return;
+
+    const layout = getMapLayout();
+    if (!layout) return;
+
+    const mapX = layout.offsetX + stairPoint.x * layout.cellW;
+    const mapY = layout.offsetY + stairPoint.y * layout.cellH;
+
+    const screenX = mapX * scale + translateX;
+    const screenY = mapY * scale + translateY;
+
+    msgElement.style.left = screenX + "px";
+    msgElement.style.top = screenY + "px";
+    msgElement.style.transform = "translate(-50%, -100%)";
+}
+
 function updateTransform() {
     const wrapper = document.querySelector(".map-wrapper");
     if (wrapper) {
         wrapper.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
     }
+
     updateRouteThickness();
-    updateAllLabels();
-}
-
-function addLabelForPlace(place, color) {
-    const layout = getMapLayout();
-    if (!layout) return;
-
-    const cx = layout.offsetX + place.x * layout.cellW;
-    const cy = layout.offsetY + place.y * layout.cellH;
-
-    const label = document.createElement("div");
-    label.className = "marker-label";
-    label.textContent = place.name;
-    label.style.left = cx + "px";
-    label.style.top = (cy - 18) + "px";
-    label.style.backgroundColor = color;
-
-    const container = document.getElementById("markersContainer");
-    if (container) {
-        container.appendChild(label);
-    }
-}
-
-function updateAllLabels() {
-    const existingLabels = document.querySelectorAll('.marker-label');
-    for (let i = 0; i < existingLabels.length; i++) {
-        existingLabels[i].remove();
-    }
-
-    if (hideLabels) return;
-
-    if (startPlace && startPlace.floor === currentFloor) {
-        addLabelForPlace(startPlace, "#2ecc71");
-    }
-    if (endPlace && endPlace.floor === currentFloor) {
-        addLabelForPlace(endPlace, "#f39c12");
-    }
+    updateStairMessagePosition();
 }
 
 function initPositions() {
     renderMarkers(currentFloor);
-    updateAllLabels();
     if (routeBuilt && fullRouteData) {
         if (fullRouteData.type === "same") {
             if (fullRouteData.startFloor === currentFloor) {
                 drawPathOnCanvas(fullRouteData.path);
             } else {
-                clearRouteVisual();
+                const svg = document.getElementById("routeSvg");
+                if (svg) svg.innerHTML = "";
             }
         } else if (fullRouteData.type === "cross") {
             if (currentFloor === fullRouteData.startFloor && fullRouteData.startPath) {
                 drawPathOnCanvas(fullRouteData.startPath);
-                if (fullRouteData.stairPoint) {
-                    showStairMessage(fullRouteData.stairPoint, fullRouteData.startFloor, fullRouteData.endFloor);
-                }
+                const msgContainer = document.getElementById("stairMessageContainer");
+                if (msgContainer) msgContainer.style.display = "none";
+                showStairMessage(fullRouteData.stairPoint, fullRouteData.startFloor, fullRouteData.endFloor);
             } else if (currentFloor === fullRouteData.endFloor && fullRouteData.endPath) {
                 drawPathOnCanvas(fullRouteData.endPath);
+                const msgContainer = document.getElementById("stairMessageContainer");
+                if (msgContainer) msgContainer.style.display = "none";
             } else {
-                clearRouteVisual();
+                const svg = document.getElementById("routeSvg");
+                if (svg) svg.innerHTML = "";
+                const msgContainer = document.getElementById("stairMessageContainer");
+                if (msgContainer) msgContainer.style.display = "none";
             }
         }
     }
@@ -318,57 +307,47 @@ function drawPathOnCanvas(path) {
 }
 
 function showStairMessage(stairPoint, startFloor, targetFloor) {
-    const svg = document.getElementById("routeSvg");
-    if (!svg) return;
-    const existingMsg = document.getElementById("stairMessage");
-    if (existingMsg) existingMsg.remove();
+    const container = document.getElementById("stairMessageContainer");
+    if (!container) return;
+
+    const oldMsg = document.getElementById("stairMessageElement");
+    if (oldMsg) oldMsg.remove();
 
     const layout = getMapLayout();
     if (!layout) return;
 
-    const x = layout.offsetX + stairPoint.x * layout.cellW;
-    const y = layout.offsetY + stairPoint.y * layout.cellH;
+    const mapX = layout.offsetX + stairPoint.x * layout.cellW;
+    const mapY = layout.offsetY + stairPoint.y * layout.cellH;
 
-    const direction = targetFloor > startFloor ? "Поднимитесь" : "Спуститесь";
+    const screenX = mapX * scale + translateX;
+    const screenY = mapY * scale + translateY;
+
+    const direction = targetFloor > startFloor ? "↑ Поднимитесь" : "↓ Спуститесь";
     const messageText = direction + " на " + targetFloor + " этаж";
 
-    const messageGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    messageGroup.setAttribute("id", "stairMessage");
+    const messageDiv = document.createElement("div");
+    messageDiv.id = "stairMessageElement";
+    messageDiv.className = "stair-message";
+    messageDiv.textContent = messageText;
+    messageDiv.style.left = screenX + "px";
+    messageDiv.style.top = screenY + "px";
 
-    const rectBg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    rectBg.setAttribute("x", x + 5);
-    rectBg.setAttribute("y", y - 25);
-    rectBg.setAttribute("width", messageText.length * 7 + 20);
-    rectBg.setAttribute("height", 22);
-    rectBg.setAttribute("fill", "rgba(0,0,0,0.7)");
-    rectBg.setAttribute("rx", "4");
-
-    const message = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    message.setAttribute("x", x + 15);
-    message.setAttribute("y", y - 10);
-    message.setAttribute("fill", "#ffffff");
-    message.setAttribute("font-size", "12");
-    message.setAttribute("font-weight", "bold");
-    message.textContent = messageText;
-
-    messageGroup.appendChild(rectBg);
-    messageGroup.appendChild(message);
-    svg.appendChild(messageGroup);
-
-    setTimeout(() => {
-        const msg = document.getElementById("stairMessage");
-        if (msg) msg.remove();
-    }, 5000);
+    container.appendChild(messageDiv);
+    container.style.display = "block";
 }
 
 function buildRoute() {
+    const svgClear = document.getElementById("routeSvg");
+    if (svgClear) svgClear.innerHTML = "";
+
     if (!startPlace || !endPlace) {
         alert("Сначала выберите две точки");
         return;
     }
 
-    clearRouteVisual();
     clearRoute();
+
+    const routeBtn = document.getElementById("mainRouteBtn");
 
     if (startPlace.floor === endPlace.floor) {
         const grid = getGrid(startPlace.floor);
@@ -393,6 +372,12 @@ function buildRoute() {
         if (descElem) {
             descElem.textContent = "Маршрут построен от " + startPlace.name + " до " + endPlace.name;
         }
+        if (routeBtn) {
+            routeBtn.innerHTML = "Маршрут построен";
+            routeBtn.style.background = "#6c757d";
+            routeBtn.style.color = "#ffffff";
+            routeBtn.disabled = true;
+        }
     } else {
         const result = findPathBetweenFloors(startPlace, endPlace, stairs);
         if (!result) {
@@ -416,16 +401,30 @@ function buildRoute() {
             showStairMessage(result.stairPoint, startPlace.floor, endPlace.floor);
         } else if (currentFloor === endPlace.floor) {
             drawPathOnCanvas(result.endPath);
-        } else {
-            clearRouteVisual();
         }
 
         const descElem = document.getElementById("placeDesc");
         if (descElem) {
             descElem.textContent = "Маршрут от " + startPlace.name + " до " + endPlace.name + " построен";
         }
+        if (routeBtn) {
+            routeBtn.innerHTML = "Маршрут построен";
+            routeBtn.style.background = "#6c757d";
+            routeBtn.style.color = "#ffffff";
+            routeBtn.disabled = true;
+        }
     }
     updateTransform();
+}
+
+function resetRouteButton() {
+    const routeBtn = document.getElementById("mainRouteBtn");
+    if (routeBtn) {
+        routeBtn.innerHTML = "Построить маршрут";
+        routeBtn.style.background = "#1a2a3a";
+        routeBtn.style.color = "#ffffff";
+        routeBtn.disabled = false;
+    }
 }
 
 function selectPoint(place) {
@@ -434,6 +433,7 @@ function selectPoint(place) {
         routeBuilt = false;
         startPlace = null;
         endPlace = null;
+        resetRouteButton();
         const titleElem = document.querySelector(".place-title");
         titleElem.textContent = "Выберите две точки";
         const descElem = document.getElementById("placeDesc");
@@ -477,6 +477,7 @@ function selectPoint(place) {
         startPlace = place;
         endPlace = null;
         clearRoute();
+        resetRouteButton();
         updateInfoCard();
         initPositions();
         if (place.floor !== currentFloor) {
@@ -498,37 +499,37 @@ function updateInfoCard() {
         titleElem.textContent = startPlace.name + " → " + endPlace.name;
         descElem.textContent = "Нажмите «Построить маршрут»";
         btn.innerHTML = "Построить маршрут";
-        btn.classList.remove("disabled");
         btn.disabled = false;
+        btn.style.background = "#1a2a3a";
+        btn.style.color = "#ffffff";
     } else if (startPlace) {
         titleElem.textContent = "Откуда: " + startPlace.name;
         descElem.textContent = "Выберите вторую точку";
         btn.innerHTML = "Выберите куда";
-        btn.classList.add("disabled");
         btn.disabled = true;
+        btn.style.background = "#94a3b8";
+        btn.style.color = "#ffffff";
     } else if (endPlace) {
         titleElem.textContent = "Куда: " + endPlace.name;
         descElem.textContent = "Выберите первую точку";
         btn.innerHTML = "Выберите откуда";
-        btn.classList.add("disabled");
         btn.disabled = true;
+        btn.style.background = "#94a3b8";
+        btn.style.color = "#ffffff";
     } else {
         titleElem.textContent = "Выберите две точки";
         descElem.textContent = "Нажмите на первую точку (откуда), затем на вторую (куда)";
         btn.innerHTML = "Выберите откуда и куда";
-        btn.classList.add("disabled");
         btn.disabled = true;
+        btn.style.background = "#94a3b8";
+        btn.style.color = "#ffffff";
     }
 }
 
 function renderMarkers(floor) {
     const container = document.getElementById("markersContainer");
     if (!container) return;
-
-    const existingMarkers = container.querySelectorAll('.place-marker');
-    for (let i = 0; i < existingMarkers.length; i++) {
-        existingMarkers[i].remove();
-    }
+    container.innerHTML = "";
 
     const layout = getMapLayout();
     if (!layout) return;
@@ -544,12 +545,8 @@ function renderMarkers(floor) {
         marker.style.top = cy + "px";
 
         let markerColor = "#3b82f6";
-        if (startPlace && startPlace.id === place.id) {
-            markerColor = "#2ecc71";
-        }
-        if (endPlace && endPlace.id === place.id) {
-            markerColor = "#f39c12";
-        }
+        if (startPlace && startPlace.id === place.id) markerColor = "#2ecc71";
+        if (endPlace && endPlace.id === place.id) markerColor = "#f39c12";
         marker.style.backgroundColor = markerColor;
 
         marker.addEventListener("click", (function(p) {
@@ -589,6 +586,17 @@ function setCurrentFloor(floor) {
         }
     }
     updateInfoCard();
+
+    if (fullRouteData && fullRouteData.type === "cross") {
+        if (currentFloor !== fullRouteData.startFloor) {
+            const msgContainer = document.getElementById("stairMessageContainer");
+            if (msgContainer) msgContainer.style.display = "none";
+        } else if (fullRouteData.stairPoint) {
+            updateStairMessagePosition();
+            const msgContainer = document.getElementById("stairMessageContainer");
+            if (msgContainer) msgContainer.style.display = "block";
+        }
+    }
 }
 
 function searchPlaces(searchText) {
@@ -640,6 +648,7 @@ function renderSearchResults(results) {
                 routeBuilt = false;
                 startPlace = null;
                 endPlace = null;
+                resetRouteButton();
                 updateInfoCard();
                 initPositions();
             }
@@ -675,6 +684,7 @@ function renderSearchResults(results) {
                     startPlace = place;
                     endPlace = null;
                     clearRoute();
+                    resetRouteButton();
                     updateInfoCard();
                     renderMarkers(currentFloor);
                     const titleElem = document.querySelector(".place-title");
@@ -818,14 +828,6 @@ document.addEventListener("deviceready", function() {
 
 window.onload = function() {
     setCurrentFloor(1);
-
-    const hideLabelsCheckbox = document.getElementById("hideLabelsCheckbox");
-    if (hideLabelsCheckbox) {
-        hideLabelsCheckbox.addEventListener("change", function(e) {
-            hideLabels = e.target.checked;
-            updateAllLabels();
-        });
-    }
 
     const mapArea = document.getElementById("mapArea");
     if (mapArea) {
