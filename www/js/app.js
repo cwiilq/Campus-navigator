@@ -585,7 +585,6 @@ function setCurrentFloor(floor) {
             btn.classList.add("active");
         }
     }
-    updateInfoCard();
 
     if (fullRouteData && fullRouteData.type === "cross") {
         if (currentFloor !== fullRouteData.startFloor) {

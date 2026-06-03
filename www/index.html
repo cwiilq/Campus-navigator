@@ -7,44 +7,46 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="app-container">
-    <div class="top-bar">
-        <h1>Навигатор ИРИТ-РТФ</h1>
-        <div style="position: relative;">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Поиск: аудитория, столовая">
+<div class="safe-area">
+    <div class="app-container">
+        <div class="top-bar">
+            <h1>Навигатор ИРИТ-РТФ</h1>
+            <div style="position: relative;">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Поиск: аудитория, столовая">
+                </div>
+                <div id="resultsList" class="results-dropdown"></div>
             </div>
-            <div id="resultsList" class="results-dropdown"></div>
-        </div>
-    </div>
-
-    <div class="floor-controls">
-        <button class="floor-btn" data-floor="1">1</button>
-        <button class="floor-btn" data-floor="2">2</button>
-        <button class="floor-btn" data-floor="3">3</button>
-        <label class="hide-labels-checkbox">
-            <input type="checkbox" id="hideLabelsCheckbox">
-            <span>Скрыть подписи точек</span>
-        </label>
-    </div>
-
-    <div id="mapArea" class="map-area">
-        <div class="map-wrapper">
-            <img id="floorMap" class="floor-image" src="img/floor-1.svg" alt="План 1 этажа">
-            <div id="markersContainer" class="markers-container"></div>
-            <svg id="routeSvg" class="route-svg"></svg>
         </div>
 
-        <div id="stairMessageContainer" class="stair-message-container" style="display: none;"></div>
-    </div>
+        <div class="floor-controls">
+            <button class="floor-btn" data-floor="1">1</button>
+            <button class="floor-btn" data-floor="2">2</button>
+            <button class="floor-btn" data-floor="3">3</button>
+            <label class="hide-labels-checkbox">
+                <input type="checkbox" id="hideLabelsCheckbox">
+                <span>Скрыть подписи точек</span>
+            </label>
+        </div>
 
-    <div id="infoCard" class="info-card">
-        <div class="place-title">Выберите две точки</div>
-        <div id="placeDesc" class="place-desc">Нажмите на первую точку (откуда), затем на вторую (куда)</div>
-        <button class="route-btn disabled" id="mainRouteBtn" disabled>
-            Выберите откуда и куда
-        </button>
+        <div id="mapArea" class="map-area">
+            <div class="map-wrapper">
+                <img id="floorMap" class="floor-image" src="img/floor-1.svg" alt="План 1 этажа">
+                <div id="markersContainer" class="markers-container"></div>
+                <svg id="routeSvg" class="route-svg"></svg>
+            </div>
+
+            <div id="stairMessageContainer" class="stair-message-container" style="display: none;"></div>
+        </div>
+
+        <div id="infoCard" class="info-card">
+            <div class="place-title">Выберите две точки</div>
+            <div id="placeDesc" class="place-desc">Нажмите на первую точку (откуда), затем на вторую (куда)</div>
+            <button class="route-btn disabled" id="mainRouteBtn" disabled>
+                Выберите откуда и куда
+            </button>
+        </div>
     </div>
 </div>
 
