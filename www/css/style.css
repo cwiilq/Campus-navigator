@@ -99,6 +99,22 @@ body {
     background: #f8fafc;
     position: relative;
     overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+}
+
+.map-area:active {
+    cursor: grabbing;
+}
+
+.map-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+    will-change: transform;
 }
 
 .floor-image {
@@ -129,21 +145,16 @@ body {
 
 .place-marker {
     position: absolute;
-    width: 22px;
-    height: 22px;
+    width: 8px;
+    height: 8px;
     background-color: #3b82f6;
-    border: 2px solid white;
+    border: 1.5px solid white;
     border-radius: 50%;
     cursor: pointer;
     pointer-events: auto;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     z-index: 20;
-}
-
-.place-marker:active {
-    transform: translate(-50%, -50%) scale(1.2);
-    background-color: #2563eb;
+    transition: background-color 0.15s ease;
 }
 
 .results-dropdown {
