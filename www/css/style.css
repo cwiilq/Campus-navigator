@@ -14,24 +14,24 @@ body {
 }
 
 .app-container {
-    max-width: 550px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
     background: #ffffff;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    box-shadow: none;
 }
 
 .top-bar {
     background: #1a2a3a;
-    padding: 16px;
+    padding: 12px 16px;
     flex-shrink: 0;
 }
 
 .top-bar h1 {
     color: #ffffff;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     margin: 0 0 8px 0;
 }
@@ -72,6 +72,7 @@ body {
     background: #f1f5f9;
     border-bottom: 1px solid #e2e8f0;
     flex-shrink: 0;
+    align-items: center;
 }
 
 .floor-btn {
@@ -91,11 +92,43 @@ body {
     border-color: #1a2a3a;
 }
 
+.hide-labels-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    background: #ffffff;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    font-size: 12px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+}
+
+.hide-labels-checkbox input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.hide-labels-checkbox span {
+    cursor: pointer;
+}
+
+@media (max-width: 550px) {
+    .hide-labels-checkbox span {
+        font-size: 10px;
+    }
+}
+
 .map-area {
     flex: 1;
-    margin: 12px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    margin: 0;
+    border-radius: 0;
+    border: none;
     background: #f8fafc;
     position: relative;
     overflow: hidden;
@@ -114,9 +147,6 @@ body {
     width: 100%;
     height: 100%;
     transform-origin: 0 0;
-    will-change: transform;
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
 }
 
 .floor-image {
@@ -124,9 +154,6 @@ body {
     height: 100%;
     object-fit: contain;
     display: block;
-    image-rendering: crisp-edges;
-    image-rendering: -webkit-optimize-contrast;
-    backface-visibility: hidden;
 }
 
 .markers-container {
@@ -136,7 +163,6 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
-    transform-style: preserve-3d;
 }
 
 .route-svg {
@@ -147,11 +173,9 @@ body {
     height: 100%;
     pointer-events: none;
     z-index: 5;
-    shape-rendering: crispEdges;
 }
 
 .route-svg line {
-    shape-rendering: crispEdges;
     vector-effect: non-scaling-stroke;
 }
 
@@ -166,22 +190,32 @@ body {
     pointer-events: auto;
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     z-index: 20;
-    transform-origin: center center;
-    will-change: transform;
     transition: background-color 0.15s ease;
-    backface-visibility: hidden;
 }
 
 .place-marker:active {
-    transform: translate3d(-50%, -50%, 0) scale(1);
     background-color: #1e40af;
 }
 
 @media (hover: hover) {
     .place-marker:hover {
-        transform: translate3d(-50%, -50%, 0) scale(1.15);
         background-color: #2563eb;
     }
+}
+
+.marker-label {
+    position: absolute;
+    background-color: #3b82f6;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: 25;
+    pointer-events: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    font-family: inherit;
 }
 
 .results-dropdown {
@@ -226,8 +260,8 @@ body {
 
 .info-card {
     background: #f8fafc;
-    margin: 12px;
-    padding: 14px;
+    margin: 8px 12px;
+    padding: 10px 14px;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
     flex-shrink: 0;
@@ -235,23 +269,23 @@ body {
 
 .place-title {
     font-weight: 600;
-    font-size: 16px;
-    margin-bottom: 6px;
+    font-size: 14px;
+    margin-bottom: 4px;
 }
 
 .place-desc {
     color: #475569;
-    font-size: 14px;
-    margin-bottom: 10px;
+    font-size: 13px;
+    margin-bottom: 8px;
 }
 
 .route-btn {
     background: #1a2a3a;
     color: white;
     border: none;
-    padding: 10px;
+    padding: 8px;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     width: 100%;
@@ -267,15 +301,39 @@ body {
     cursor: default;
 }
 
-.marker-tooltip {
-    position: fixed;
-    background: #1a2a3a;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    z-index: 100;
-    white-space: nowrap;
-    pointer-events: none;
-    font-weight: 500;
+@media (min-width: 768px) {
+    .top-bar {
+        padding: 16px 24px;
+    }
+
+    .top-bar h1 {
+        font-size: 20px;
+    }
+
+    .floor-controls {
+        padding: 10px 16px;
+    }
+
+    .floor-btn {
+        padding: 8px 20px;
+        font-size: 15px;
+    }
+
+    .info-card {
+        margin: 8px 16px;
+        padding: 12px 16px;
+    }
+
+    .place-title {
+        font-size: 15px;
+    }
+
+    .place-desc {
+        font-size: 13px;
+    }
+
+    .route-btn {
+        padding: 10px;
+        font-size: 15px;
+    }
 }

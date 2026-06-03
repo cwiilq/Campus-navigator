@@ -5,6 +5,7 @@ let currentPath = [];
 let currentRouteStair = null;
 let routeBuilt = false;
 let fullRouteData = null;
+let hideLabels = false;
 
 let scale = 1;
 let translateX = 0;
@@ -69,7 +70,7 @@ function leeAlgorithm(grid, startX, startY, targetX, targetY) {
     let minDist = Infinity;
     for (let y = 0; y < GRID_ROWS; y++) {
         for (let x = 0; x < GRID_COLS; x++) {
-            if (visited[y][x]) {
+            if (isWalkable(grid, x, y, false)) {
                 const dist = Math.abs(x - targetX) + Math.abs(y - targetY);
                 if (dist < minDist) {
                     minDist = dist;
@@ -80,17 +81,11 @@ function leeAlgorithm(grid, startX, startY, targetX, targetY) {
     }
 
     if (closestCell) {
-        const path = [];
-        let cx = closestCell.x, cy = closestCell.y;
-        while (cx !== startX || cy !== startY) {
-            path.unshift({ x: cx, y: cy });
-            const p = parent[cy][cx];
-            cx = p.x;
-            cy = p.y;
+        const pathToNear = leeAlgorithm(grid, startX, startY, closestCell.x, closestCell.y);
+        if (pathToNear) {
+            pathToNear.push({ x: targetX, y: targetY });
+            return pathToNear;
         }
-        path.unshift({ x: startX, y: startY });
-        path.push({ x: targetX, y: targetY });
-        return path;
     }
 
     return null;
@@ -173,6 +168,11 @@ function clearRoute() {
     fullRouteData = null;
 }
 
+function clearRouteVisual() {
+    const svg = document.getElementById("routeSvg");
+    if (svg) svg.innerHTML = "";
+}
+
 function getMapLayout() {
     const img = document.getElementById("floorMap");
     if (!img || !img.naturalWidth) return null;
@@ -221,31 +221,55 @@ function updateTransform() {
     if (wrapper) {
         wrapper.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
     }
+    updateRouteThickness();
+    updateAllLabels();
+}
 
-    const invScale = 1 / scale;
-    const markers = document.querySelectorAll('.place-marker');
-    for (let i = 0; i < markers.length; i++) {
-        let modifier = 1.0;
-        if (markers[i].classList.contains('active-point')) {
-            modifier = 1.4;
-        } else if (markers[i].classList.contains('hover-point')) {
-            modifier = 1.2;
-        }
-        markers[i].style.transform = `translate3d(-50%, -50%, 0) scale(${invScale * modifier})`;
+function addLabelForPlace(place, color) {
+    const layout = getMapLayout();
+    if (!layout) return;
+
+    const cx = layout.offsetX + place.x * layout.cellW;
+    const cy = layout.offsetY + place.y * layout.cellH;
+
+    const label = document.createElement("div");
+    label.className = "marker-label";
+    label.textContent = place.name;
+    label.style.left = cx + "px";
+    label.style.top = (cy - 18) + "px";
+    label.style.backgroundColor = color;
+
+    const container = document.getElementById("markersContainer");
+    if (container) {
+        container.appendChild(label);
+    }
+}
+
+function updateAllLabels() {
+    const existingLabels = document.querySelectorAll('.marker-label');
+    for (let i = 0; i < existingLabels.length; i++) {
+        existingLabels[i].remove();
     }
 
-    updateRouteThickness();
+    if (hideLabels) return;
+
+    if (startPlace && startPlace.floor === currentFloor) {
+        addLabelForPlace(startPlace, "#2ecc71");
+    }
+    if (endPlace && endPlace.floor === currentFloor) {
+        addLabelForPlace(endPlace, "#f39c12");
+    }
 }
 
 function initPositions() {
     renderMarkers(currentFloor);
+    updateAllLabels();
     if (routeBuilt && fullRouteData) {
         if (fullRouteData.type === "same") {
             if (fullRouteData.startFloor === currentFloor) {
                 drawPathOnCanvas(fullRouteData.path);
             } else {
-                const svg = document.getElementById("routeSvg");
-                if (svg) svg.innerHTML = "";
+                clearRouteVisual();
             }
         } else if (fullRouteData.type === "cross") {
             if (currentFloor === fullRouteData.startFloor && fullRouteData.startPath) {
@@ -256,8 +280,7 @@ function initPositions() {
             } else if (currentFloor === fullRouteData.endFloor && fullRouteData.endPath) {
                 drawPathOnCanvas(fullRouteData.endPath);
             } else {
-                const svg = document.getElementById("routeSvg");
-                if (svg) svg.innerHTML = "";
+                clearRouteVisual();
             }
         }
     }
@@ -339,14 +362,12 @@ function showStairMessage(stairPoint, startFloor, targetFloor) {
 }
 
 function buildRoute() {
-    const svgClear = document.getElementById("routeSvg");
-    if (svgClear) svgClear.innerHTML = "";
-
     if (!startPlace || !endPlace) {
         alert("Сначала выберите две точки");
         return;
     }
 
+    clearRouteVisual();
     clearRoute();
 
     if (startPlace.floor === endPlace.floor) {
@@ -395,6 +416,8 @@ function buildRoute() {
             showStairMessage(result.stairPoint, startPlace.floor, endPlace.floor);
         } else if (currentFloor === endPlace.floor) {
             drawPathOnCanvas(result.endPath);
+        } else {
+            clearRouteVisual();
         }
 
         const descElem = document.getElementById("placeDesc");
@@ -498,50 +521,19 @@ function updateInfoCard() {
     }
 }
 
-let currentTooltip = null;
-
-function showTooltip(x, y, text) {
-    if (currentTooltip) {
-        currentTooltip.remove();
-        currentTooltip = null;
-    }
-    const tooltip = document.createElement("div");
-    tooltip.className = "marker-tooltip";
-    tooltip.textContent = text;
-    tooltip.style.position = "fixed";
-    tooltip.style.left = (x + 15) + "px";
-    tooltip.style.top = (y - 30) + "px";
-    tooltip.style.backgroundColor = "#1a2a3a";
-    tooltip.style.color = "white";
-    tooltip.style.padding = "6px 12px";
-    tooltip.style.borderRadius = "8px";
-    tooltip.style.fontSize = "13px";
-    tooltip.style.fontWeight = "500";
-    tooltip.style.zIndex = "100";
-    tooltip.style.whiteSpace = "nowrap";
-    tooltip.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
-    tooltip.style.pointerEvents = "none";
-    currentTooltip = tooltip;
-    document.body.appendChild(tooltip);
-}
-
-function hideTooltip() {
-    if (currentTooltip) {
-        currentTooltip.remove();
-        currentTooltip = null;
-    }
-}
-
 function renderMarkers(floor) {
     const container = document.getElementById("markersContainer");
     if (!container) return;
-    container.innerHTML = "";
+
+    const existingMarkers = container.querySelectorAll('.place-marker');
+    for (let i = 0; i < existingMarkers.length; i++) {
+        existingMarkers[i].remove();
+    }
 
     const layout = getMapLayout();
     if (!layout) return;
 
     const filtered = allPlaces.filter(p => p.floor === floor);
-    const invScale = 1 / scale;
 
     for (const place of filtered) {
         const cx = layout.offsetX + place.x * layout.cellW;
@@ -551,49 +543,18 @@ function renderMarkers(floor) {
         marker.style.left = cx + "px";
         marker.style.top = cy + "px";
 
-        let isSelectionActive = false;
         let markerColor = "#3b82f6";
         if (startPlace && startPlace.id === place.id) {
             markerColor = "#2ecc71";
-            isSelectionActive = true;
         }
         if (endPlace && endPlace.id === place.id) {
             markerColor = "#f39c12";
-            isSelectionActive = true;
         }
         marker.style.backgroundColor = markerColor;
-
-        if (isSelectionActive) {
-            marker.classList.add('active-point');
-        }
-
-        let modifier = isSelectionActive ? 2.2 : 1.0;
-        marker.style.transform = `translate3d(-50%, -50%, 0) scale(${invScale * modifier})`;
 
         marker.addEventListener("click", (function(p) {
             return function() { selectPoint(p); };
         })(place));
-
-        marker.addEventListener("mouseenter", (function(p, m) {
-            return function(e) {
-                const rectMarker = m.getBoundingClientRect();
-                showTooltip(rectMarker.left, rectMarker.top, p.name);
-                m.classList.add('hover-point');
-                let currentInvScale = 1 / scale;
-                let mod = m.classList.contains('active-point') ? 2.2 : 1.5;
-                m.style.transform = `translate3d(-50%, -50%, 0) scale(${currentInvScale * mod})`;
-            };
-        })(place, marker));
-
-        marker.addEventListener("mouseleave", (function(m) {
-            return function() {
-                hideTooltip();
-                m.classList.remove('hover-point');
-                let currentInvScale = 1 / scale;
-                let mod = m.classList.contains('active-point') ? 2.2 : 1.0;
-                m.style.transform = `translate3d(-50%, -50%, 0) scale(${currentInvScale * mod})`;
-            };
-        })(marker));
 
         container.appendChild(marker);
     }
@@ -660,11 +621,11 @@ function renderSearchResults(results) {
             '</div>';
     }
     container.innerHTML = html;
-
     const items = container.querySelectorAll(".result-item");
     for (const el of items) {
         el.addEventListener("click", function() {
-            const id = parseFloat(this.dataset.id);
+            const id = parseInt(this.dataset.id);
+            const targetFloor = parseInt(this.dataset.floor);
             const place = allPlaces.find(p => p.id === id);
 
             if (!place) return;
@@ -673,7 +634,67 @@ function renderSearchResults(results) {
             if (searchInput) searchInput.value = "";
             container.style.display = "none";
 
-            selectPoint(place);
+            if (routeBuilt) {
+                clearRoute();
+                routeBuilt = false;
+                startPlace = null;
+                endPlace = null;
+                updateInfoCard();
+            }
+
+            function doSelect() {
+                if (startPlace === null) {
+                    startPlace = place;
+                    updateInfoCard();
+                    renderMarkers(currentFloor);
+                    updateAllLabels();
+                    const titleElem = document.querySelector(".place-title");
+                    titleElem.textContent = "Откуда: " + place.name;
+                    const descElem = document.getElementById("placeDesc");
+                    descElem.textContent = "Теперь выберите вторую точку (куда)";
+                } else if (endPlace === null) {
+                    if (startPlace.id === place.id) {
+                        startPlace = null;
+                        updateInfoCard();
+                        renderMarkers(currentFloor);
+                        updateAllLabels();
+                        const titleElem = document.querySelector(".place-title");
+                        titleElem.textContent = "Выберите две точки";
+                        const descElem = document.getElementById("placeDesc");
+                        descElem.textContent = "Нажмите на первую точку (откуда), затем на вторую (куда)";
+                        return;
+                    }
+                    endPlace = place;
+                    updateInfoCard();
+                    renderMarkers(currentFloor);
+                    updateAllLabels();
+                    const titleElem = document.querySelector(".place-title");
+                    titleElem.textContent = startPlace.name + " → " + endPlace.name;
+                    const descElem = document.getElementById("placeDesc");
+                    descElem.textContent = "Нажмите «Построить маршрут»";
+                } else {
+                    startPlace = place;
+                    endPlace = null;
+                    clearRoute();
+                    updateInfoCard();
+                    renderMarkers(currentFloor);
+                    updateAllLabels();
+                    const titleElem = document.querySelector(".place-title");
+                    titleElem.textContent = "Откуда: " + place.name;
+                    const descElem = document.getElementById("placeDesc");
+                    descElem.textContent = "Теперь выберите вторую точку (куда)";
+                }
+                initPositions();
+            }
+
+            if (currentFloor !== targetFloor) {
+                setCurrentFloor(targetFloor);
+                setTimeout(function() {
+                    doSelect();
+                }, 300);
+            } else {
+                doSelect();
+            }
         });
     }
 }
@@ -799,6 +820,14 @@ document.addEventListener("deviceready", function() {
 
 window.onload = function() {
     setCurrentFloor(1);
+
+    const hideLabelsCheckbox = document.getElementById("hideLabelsCheckbox");
+    if (hideLabelsCheckbox) {
+        hideLabelsCheckbox.addEventListener("change", function(e) {
+            hideLabels = e.target.checked;
+            updateAllLabels();
+        });
+    }
 
     const mapArea = document.getElementById("mapArea");
     if (mapArea) {
