@@ -227,9 +227,9 @@ function updateTransform() {
     for (let i = 0; i < markers.length; i++) {
         let modifier = 1.0;
         if (markers[i].classList.contains('active-point')) {
-            modifier = 2.2;
+            modifier = 1.4;
         } else if (markers[i].classList.contains('hover-point')) {
-            modifier = 1.5;
+            modifier = 1.2;
         }
         markers[i].style.transform = `translate3d(-50%, -50%, 0) scale(${invScale * modifier})`;
     }
@@ -240,8 +240,13 @@ function updateTransform() {
 function initPositions() {
     renderMarkers(currentFloor);
     if (routeBuilt && fullRouteData) {
-        if (fullRouteData.type === "same" && fullRouteData.startFloor === currentFloor) {
-            drawPathOnCanvas(fullRouteData.path);
+        if (fullRouteData.type === "same") {
+            if (fullRouteData.startFloor === currentFloor) {
+                drawPathOnCanvas(fullRouteData.path);
+            } else {
+                const svg = document.getElementById("routeSvg");
+                if (svg) svg.innerHTML = "";
+            }
         } else if (fullRouteData.type === "cross") {
             if (currentFloor === fullRouteData.startFloor && fullRouteData.startPath) {
                 drawPathOnCanvas(fullRouteData.startPath);
@@ -250,6 +255,9 @@ function initPositions() {
                 }
             } else if (currentFloor === fullRouteData.endFloor && fullRouteData.endPath) {
                 drawPathOnCanvas(fullRouteData.endPath);
+            } else {
+                const svg = document.getElementById("routeSvg");
+                if (svg) svg.innerHTML = "";
             }
         }
     }
@@ -331,6 +339,9 @@ function showStairMessage(stairPoint, startFloor, targetFloor) {
 }
 
 function buildRoute() {
+    const svgClear = document.getElementById("routeSvg");
+    if (svgClear) svgClear.innerHTML = "";
+
     if (!startPlace || !endPlace) {
         alert("Сначала выберите две точки");
         return;
@@ -340,7 +351,6 @@ function buildRoute() {
 
     if (startPlace.floor === endPlace.floor) {
         const grid = getGrid(startPlace.floor);
-
         const path = leeAlgorithm(grid, startPlace.x, startPlace.y, endPlace.x, endPlace.y);
         if (!path) {
             alert("Не удалось построить маршрут");
@@ -355,7 +365,9 @@ function buildRoute() {
             startFloor: startPlace.floor,
             endFloor: endPlace.floor
         };
-        drawPathOnCanvas(currentPath);
+        if (currentFloor === startPlace.floor) {
+            drawPathOnCanvas(currentPath);
+        }
         const descElem = document.getElementById("placeDesc");
         if (descElem) {
             descElem.textContent = "Маршрут построен от " + startPlace.name + " до " + endPlace.name;
@@ -383,9 +395,6 @@ function buildRoute() {
             showStairMessage(result.stairPoint, startPlace.floor, endPlace.floor);
         } else if (currentFloor === endPlace.floor) {
             drawPathOnCanvas(result.endPath);
-        } else {
-            const svg = document.getElementById("routeSvg");
-            if (svg) svg.innerHTML = "";
         }
 
         const descElem = document.getElementById("placeDesc");
@@ -651,23 +660,20 @@ function renderSearchResults(results) {
             '</div>';
     }
     container.innerHTML = html;
+
     const items = container.querySelectorAll(".result-item");
     for (const el of items) {
         el.addEventListener("click", function() {
-            const id = parseInt(this.dataset.id);
+            const id = parseFloat(this.dataset.id);
             const place = allPlaces.find(p => p.id === id);
-            if (place) {
-                if (routeBuilt) {
-                    clearRoute();
-                    routeBuilt = false;
-                    startPlace = null;
-                    endPlace = null;
-                    updateInfoCard();
-                    initPositions();
-                }
-                selectPoint(place);
-            }
+
+            if (!place) return;
+
+            const searchInput = document.getElementById("searchInput");
+            if (searchInput) searchInput.value = "";
             container.style.display = "none";
+
+            selectPoint(place);
         });
     }
 }

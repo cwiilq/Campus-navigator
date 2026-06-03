@@ -114,6 +114,9 @@ body {
     width: 100%;
     height: 100%;
     transform-origin: 0 0;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
 }
 
 .floor-image {
@@ -121,6 +124,9 @@ body {
     height: 100%;
     object-fit: contain;
     display: block;
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    backface-visibility: hidden;
 }
 
 .markers-container {
@@ -130,6 +136,7 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none;
+    transform-style: preserve-3d;
 }
 
 .route-svg {
@@ -140,9 +147,11 @@ body {
     height: 100%;
     pointer-events: none;
     z-index: 5;
+    shape-rendering: crispEdges;
 }
 
 .route-svg line {
+    shape-rendering: crispEdges;
     vector-effect: non-scaling-stroke;
 }
 
@@ -158,19 +167,36 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     z-index: 20;
     transform-origin: center center;
-    transition: background-color 0.15s ease, transform 0.1s ease-out;
+    will-change: transform;
+    transition: background-color 0.15s ease;
+    backface-visibility: hidden;
+}
+
+.place-marker:active {
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    background-color: #1e40af;
+}
+
+@media (hover: hover) {
+    .place-marker:hover {
+        transform: translate3d(-50%, -50%, 0) scale(1.15);
+        background-color: #2563eb;
+    }
 }
 
 .results-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
     background: #ffffff;
-    margin: 4px 12px 0 12px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     max-height: 200px;
     overflow-y: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     display: none;
-    z-index: 20;
+    z-index: 100;
 }
 
 .result-item {

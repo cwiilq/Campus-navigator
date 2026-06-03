@@ -10,9 +10,12 @@
 <div class="app-container">
     <div class="top-bar">
         <h1>Навигатор ИРИТ-РТФ</h1>
-        <div class="search-box">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Поиск: аудитория, столовая">
+        <div style="position: relative;">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Поиск: аудитория, столовая">
+            </div>
+            <div id="resultsList" class="results-dropdown"></div>
         </div>
     </div>
 
@@ -29,8 +32,6 @@
             <svg id="routeSvg" class="route-svg"></svg>
         </div>
     </div>
-
-    <div id="resultsList" class="results-dropdown"></div>
 
     <div id="infoCard" class="info-card">
         <div class="place-title">Выберите две точки</div>
