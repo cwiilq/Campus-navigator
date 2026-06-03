@@ -69,7 +69,7 @@ function leeAlgorithm(grid, startX, startY, targetX, targetY) {
     let minDist = Infinity;
     for (let y = 0; y < GRID_ROWS; y++) {
         for (let x = 0; x < GRID_COLS; x++) {
-            if (isWalkable(grid, x, y, false)) {
+            if (visited[y][x]) {
                 const dist = Math.abs(x - targetX) + Math.abs(y - targetY);
                 if (dist < minDist) {
                     minDist = dist;
@@ -80,11 +80,17 @@ function leeAlgorithm(grid, startX, startY, targetX, targetY) {
     }
 
     if (closestCell) {
-        const pathToNear = leeAlgorithm(grid, startX, startY, closestCell.x, closestCell.y);
-        if (pathToNear) {
-            pathToNear.push({ x: targetX, y: targetY });
-            return pathToNear;
+        const path = [];
+        let cx = closestCell.x, cy = closestCell.y;
+        while (cx !== startX || cy !== startY) {
+            path.unshift({ x: cx, y: cy });
+            const p = parent[cy][cx];
+            cx = p.x;
+            cy = p.y;
         }
+        path.unshift({ x: startX, y: startY });
+        path.push({ x: targetX, y: targetY });
+        return path;
     }
 
     return null;
@@ -200,23 +206,35 @@ function getMapLayout() {
     };
 }
 
+function updateRouteThickness() {
+    const lines = document.querySelectorAll("#routeSvg line");
+    if (lines.length === 0) return;
+    const baseWidth = 5;
+    const dynamicWidth = Math.max(1.5, baseWidth / scale);
+    for (let i = 0; i < lines.length; i++) {
+        lines[i].setAttribute("stroke-width", dynamicWidth);
+    }
+}
+
 function updateTransform() {
     const wrapper = document.querySelector(".map-wrapper");
     if (wrapper) {
-        wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        wrapper.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
     }
 
     const invScale = 1 / scale;
     const markers = document.querySelectorAll('.place-marker');
     for (let i = 0; i < markers.length; i++) {
-        let mScale = invScale;
+        let modifier = 1.0;
         if (markers[i].classList.contains('active-point')) {
-            mScale = invScale * 2.5;
+            modifier = 2.2;
         } else if (markers[i].classList.contains('hover-point')) {
-            mScale = invScale * 1.7;
+            modifier = 1.5;
         }
-        markers[i].style.transform = `translate(-50%, -50%) scale(${mScale})`;
+        markers[i].style.transform = `translate3d(-50%, -50%, 0) scale(${invScale * modifier})`;
     }
+
+    updateRouteThickness();
 }
 
 function initPositions() {
@@ -260,11 +278,12 @@ function drawPathOnCanvas(path) {
         line.setAttribute("x2", x2);
         line.setAttribute("y2", y2);
         line.setAttribute("stroke", "#f39c12");
-        line.setAttribute("stroke-width", "5");
         line.setAttribute("stroke-linecap", "round");
         line.setAttribute("vector-effect", "non-scaling-stroke");
         svg.appendChild(line);
     }
+
+    updateRouteThickness();
 }
 
 function showStairMessage(stairPoint, startFloor, targetFloor) {
@@ -535,12 +554,12 @@ function renderMarkers(floor) {
         }
         marker.style.backgroundColor = markerColor;
 
-        let currentMarkerScale = invScale;
         if (isSelectionActive) {
             marker.classList.add('active-point');
-            currentMarkerScale = invScale * 2.5;
         }
-        marker.style.transform = `translate(-50%, -50%) scale(${currentMarkerScale})`;
+
+        let modifier = isSelectionActive ? 2.2 : 1.0;
+        marker.style.transform = `translate3d(-50%, -50%, 0) scale(${invScale * modifier})`;
 
         marker.addEventListener("click", (function(p) {
             return function() { selectPoint(p); };
@@ -551,11 +570,9 @@ function renderMarkers(floor) {
                 const rectMarker = m.getBoundingClientRect();
                 showTooltip(rectMarker.left, rectMarker.top, p.name);
                 m.classList.add('hover-point');
-                let s = invScale * 1.7;
-                if (m.classList.contains('active-point')) {
-                    s = invScale * 2.5;
-                }
-                m.style.transform = `translate(-50%, -50%) scale(${s})`;
+                let currentInvScale = 1 / scale;
+                let mod = m.classList.contains('active-point') ? 2.2 : 1.5;
+                m.style.transform = `translate3d(-50%, -50%, 0) scale(${currentInvScale * mod})`;
             };
         })(place, marker));
 
@@ -563,11 +580,9 @@ function renderMarkers(floor) {
             return function() {
                 hideTooltip();
                 m.classList.remove('hover-point');
-                let s = invScale;
-                if (m.classList.contains('active-point')) {
-                    s = invScale * 2.5;
-                }
-                m.style.transform = `translate(-50%, -50%) scale(${s})`;
+                let currentInvScale = 1 / scale;
+                let mod = m.classList.contains('active-point') ? 2.2 : 1.0;
+                m.style.transform = `translate3d(-50%, -50%, 0) scale(${currentInvScale * mod})`;
             };
         })(marker));
 
@@ -662,7 +677,7 @@ let lastScale = 1;
 let initialTranslateX = 0;
 let initialTranslateY = 0;
 
-function getDistance(touches) {
+function getDistanceTouch(touches) {
     const dx = touches[0].clientX - touches[1].clientX;
     const dy = touches[0].clientY - touches[1].clientY;
     return Math.sqrt(dx * dx + dy * dy);
@@ -671,7 +686,7 @@ function getDistance(touches) {
 function onTouchStart(e) {
     if (e.touches.length === 2) {
         e.preventDefault();
-        initialDistance = getDistance(e.touches);
+        initialDistance = getDistanceTouch(e.touches);
         lastScale = scale;
         initialTranslateX = translateX;
         initialTranslateY = translateY;
@@ -688,7 +703,7 @@ function onTouchStart(e) {
 function onTouchMove(e) {
     if (e.touches.length === 2) {
         e.preventDefault();
-        const newDistance = getDistance(e.touches);
+        const newDistance = getDistanceTouch(e.touches);
         const newScale = Math.min(5, Math.max(1, lastScale * (newDistance / initialDistance)));
 
         const mapArea = document.getElementById("mapArea");
