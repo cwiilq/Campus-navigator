@@ -621,10 +621,11 @@ function renderSearchResults(results) {
             '</div>';
     }
     container.innerHTML = html;
+
     const items = container.querySelectorAll(".result-item");
     for (const el of items) {
         el.addEventListener("click", function() {
-            const id = parseInt(this.dataset.id);
+            const id = parseFloat(this.dataset.id);
             const targetFloor = parseInt(this.dataset.floor);
             const place = allPlaces.find(p => p.id === id);
 
@@ -640,6 +641,7 @@ function renderSearchResults(results) {
                 startPlace = null;
                 endPlace = null;
                 updateInfoCard();
+                initPositions();
             }
 
             function doSelect() {
@@ -647,7 +649,6 @@ function renderSearchResults(results) {
                     startPlace = place;
                     updateInfoCard();
                     renderMarkers(currentFloor);
-                    updateAllLabels();
                     const titleElem = document.querySelector(".place-title");
                     titleElem.textContent = "Откуда: " + place.name;
                     const descElem = document.getElementById("placeDesc");
@@ -657,7 +658,6 @@ function renderSearchResults(results) {
                         startPlace = null;
                         updateInfoCard();
                         renderMarkers(currentFloor);
-                        updateAllLabels();
                         const titleElem = document.querySelector(".place-title");
                         titleElem.textContent = "Выберите две точки";
                         const descElem = document.getElementById("placeDesc");
@@ -667,7 +667,6 @@ function renderSearchResults(results) {
                     endPlace = place;
                     updateInfoCard();
                     renderMarkers(currentFloor);
-                    updateAllLabels();
                     const titleElem = document.querySelector(".place-title");
                     titleElem.textContent = startPlace.name + " → " + endPlace.name;
                     const descElem = document.getElementById("placeDesc");
@@ -678,7 +677,6 @@ function renderSearchResults(results) {
                     clearRoute();
                     updateInfoCard();
                     renderMarkers(currentFloor);
-                    updateAllLabels();
                     const titleElem = document.querySelector(".place-title");
                     titleElem.textContent = "Откуда: " + place.name;
                     const descElem = document.getElementById("placeDesc");
