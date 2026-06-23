@@ -15,6 +15,15 @@ let dragStartY = 0;
 let lastTranslateX = 0;
 let lastTranslateY = 0;
 
+function resizeAppHeight() {
+    const doc = document.documentElement;
+    doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+    const safeArea = document.querySelector('.safe-area');
+    if (safeArea) {
+        safeArea.style.height = `${window.innerHeight}px`;
+    }
+}
+
 function getGrid(floor) {
     if (floor === 1) return floor1Grid;
     if (floor === 2) return floor2Grid;
@@ -816,16 +825,26 @@ function onWheel(e) {
 }
 
 window.addEventListener("resize", function() {
+    resizeAppHeight();
     setTimeout(function() {
         initPositions();
     }, 100);
 });
 
+window.addEventListener("orientationchange", function() {
+    setTimeout(function() {
+        resizeAppHeight();
+        initPositions();
+    }, 200);
+});
+
 document.addEventListener("deviceready", function() {
+    resizeAppHeight();
     setCurrentFloor(1);
 }, false);
 
 window.onload = function() {
+    resizeAppHeight();
     setCurrentFloor(1);
 
     const mapArea = document.getElementById("mapArea");
