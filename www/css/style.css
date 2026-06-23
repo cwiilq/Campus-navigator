@@ -214,6 +214,7 @@ body {
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
     z-index: 20;
     transition: background-color 0.15s ease;
+    transform: translate(-50%, -50%);
 }
 
 .place-marker:active {
@@ -224,21 +225,27 @@ body {
     .place-marker:hover {
         background-color: #2563eb;
     }
+    .place-marker:hover + .marker-label {
+        display: block !important;
+    }
 }
 
 .marker-label {
     position: absolute;
-    background-color: #3b82f6;
+    background-color: rgba(26, 42, 58, 0.9);
     color: white;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
     z-index: 25;
     pointer-events: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
     font-family: inherit;
+    transform: translate(-50%, -140%);
+    display: none;
+}
+
+.marker-label.visible {
+    display: block;
 }
 
 .results-dropdown {

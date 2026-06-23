@@ -221,6 +221,25 @@ function updateRouteThickness() {
     }
 }
 
+function updateLabelsScale() {
+    const labels = document.querySelectorAll(".marker-label");
+    const baseFontSize = 11;
+    const basePaddingTopBottom = 3;
+    const basePaddingLeftRight = 7;
+    const baseBorderRadius = 4;
+
+    const dynamicFontSize = Math.max(6, baseFontSize / scale);
+    const dynamicPaddingTB = Math.max(1, basePaddingTopBottom / scale);
+    const dynamicPaddingLR = Math.max(2, basePaddingLeftRight / scale);
+    const dynamicRadius = Math.max(2, baseBorderRadius / scale);
+
+    for (let i = 0; i < labels.length; i++) {
+        labels[i].style.fontSize = dynamicFontSize + "px";
+        labels[i].style.padding = dynamicPaddingTB + "px " + dynamicPaddingLR + "px";
+        labels[i].style.borderRadius = dynamicRadius + "px";
+    }
+}
+
 function updateStairMessagePosition() {
     const msgElement = document.getElementById("stairMessageElement");
     if (!msgElement) return;
@@ -251,6 +270,7 @@ function updateTransform() {
     }
 
     updateRouteThickness();
+    updateLabelsScale();
     updateStairMessagePosition();
 }
 
@@ -544,18 +564,29 @@ function renderMarkers(floor) {
     if (!layout) return;
 
     const filtered = allPlaces.filter(p => p.floor === floor);
+    const hideCheckbox = document.getElementById("hideLabelsCheckbox");
+    const hideLabels = hideCheckbox ? hideCheckbox.checked : false;
 
     for (const place of filtered) {
         const cx = layout.offsetX + place.x * layout.cellW;
         const cy = layout.offsetY + place.y * layout.cellH;
+
         const marker = document.createElement("div");
         marker.className = "place-marker";
         marker.style.left = cx + "px";
         marker.style.top = cy + "px";
 
         let markerColor = "#3b82f6";
-        if (startPlace && startPlace.id === place.id) markerColor = "#2ecc71";
-        if (endPlace && endPlace.id === place.id) markerColor = "#f39c12";
+        let isSelected = false;
+
+        if (startPlace && startPlace.id === place.id) {
+            markerColor = "#2ecc71";
+            isSelected = true;
+        }
+        if (endPlace && endPlace.id === place.id) {
+            markerColor = "#f39c12";
+            isSelected = true;
+        }
         marker.style.backgroundColor = markerColor;
 
         marker.addEventListener("click", (function(p) {
@@ -563,7 +594,20 @@ function renderMarkers(floor) {
         })(place));
 
         container.appendChild(marker);
+
+        if (!hideLabels) {
+            const label = document.createElement("div");
+            label.className = "marker-label";
+            if (isSelected) {
+                label.className += " visible";
+            }
+            label.style.left = cx + "px";
+            label.style.top = cy + "px";
+            label.textContent = place.name;
+            container.appendChild(label);
+        }
     }
+    updateLabelsScale();
 }
 
 function setCurrentFloor(floor) {
@@ -874,6 +918,14 @@ window.onload = function() {
             setCurrentFloor(floor);
         });
     }
+
+    const hideLabelsCheckbox = document.getElementById("hideLabelsCheckbox");
+    if (hideLabelsCheckbox) {
+        hideLabelsCheckbox.addEventListener("change", function() {
+            renderMarkers(currentFloor);
+        });
+    }
+
     document.addEventListener("click", function(e) {
         const resultsDiv = document.getElementById("resultsList");
         const searchBox = document.querySelector(".search-box");
